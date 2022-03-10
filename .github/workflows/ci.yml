@@ -1,0 +1,44 @@
+# This workflow will do a clean install of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: deplay
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest # 指定用什么版本服务器来执行
+
+    steps:
+      - name: pull code
+        uses: actions/checkout@v2
+
+      - name: 安装依赖
+        run: npm i
+
+      - name: 编译构建
+        run: npm run build
+
+      - name: SSH 命令删除旧文件
+        uses: appleboy/ssh-action@master
+        with:
+          # 这里配置对应仓库设置的变量，就可以避免服务器配置暴露
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+
+          # 先用 SSH 命令删除旧文件
+          script: |
+            rm -rf /root/nginx/www/tank/*
+
+      - name: 部署到服务器
+        uses: wlixcc/SFTP-Deploy-Action@v1.0 # 这个是sftp插件
+        with:
+          server: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          ssh_private_key: ${{ secrets.SSH_KEY }}
+          local_path: './dist/*'
+          remote_path: '/root/nginx/www/tank'
