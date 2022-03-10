@@ -31,8 +31,8 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
 
           # 先用 SSH 命令删除旧文件
-          script: |
-            rm -rf /root/nginx/www/tank/*
+          # script: |
+          #   rm -rf /root/nginx/www/tank/*
 
       - name: 部署到服务器
         uses: wlixcc/SFTP-Deploy-Action@v1.0 # 这个是sftp插件
